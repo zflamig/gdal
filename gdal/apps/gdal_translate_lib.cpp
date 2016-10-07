@@ -127,6 +127,10 @@ struct GDALTranslateOptions
     /*! list of creation options to the output format driver */
     char **papszCreateOptions;
 
+    /*! grib identifies to search for */
+    char **papszGribElement;
+    char **papszGribShortName;
+
     /*! subwindow from the source image for copying based on pixel/line location */
     double adfSrcWin[4];
 
@@ -416,6 +420,8 @@ GDALTranslateOptions* GDALTranslateOptionsClone(const GDALTranslateOptions *psOp
                sizeof(int) * psOptions->nBandCount);
     }
     psOptions->papszCreateOptions = CSLDuplicate(psOptionsIn->papszCreateOptions);
+    psOptions->papszGribElement = CSLDuplicate(psOptionsIn->papszGribElement);
+    psOptions->papszGribShortName = CSLDuplicate(psOptionsIn->papszGribShortName);
     if( psOptionsIn->pasScaleParams )
     {
         psOptions->pasScaleParams = (GDALTranslateScaleParams*)CPLMalloc(sizeof(GDALTranslateScaleParams) * psOptions->nScaleRepeat);
@@ -606,6 +612,33 @@ GDALDatasetH GDALTranslate( const char *pszDest, GDALDatasetH hSrcDataset,
         psOptions->adfSrcWin[2] = nRasterXSize;
         psOptions->adfSrcWin[3] = nRasterYSize;
     }
+
+
+int nCount = CSLCount(psOptions->papszGribElement);
+
+for( int i = 0; i < nCount; i++ ) {
+        for( int iBand = 0; iBand < GDALGetRasterCount( hSrcDataset ); iBand++ ) {
+
+                GDALRasterBandH hBand = GDALGetRasterBand( hSrcDataset, iBand+1 );
+
+                const char *pszElement = GDALGetMetadataItem( hBand, "GRIB_ELEMENT", "" );
+                const char *pszShortName = GDALGetMetadataItem( hBand, "GRIB_SHORT_NAME", "" );
+
+                //fprintf( stdout, "Searching %i \"%s\" for \"%s\"\n", iBand+1, pszComment, papszGribComment[i]);
+
+                if( pszElement != NULL && pszShortName != NULL && EQUAL(pszElement, psOptions->papszGribElement[i]) && EQUAL(pszShortName, psOptions->papszGribShortName[i])) {
+                        psOptions->nBandCount++;
+                        psOptions->panBandList = (int *)CPLRealloc(psOptions->panBandList, sizeof(int) * psOptions->nBandCount);
+                        psOptions->panBandList[psOptions->nBandCount-1] = (iBand+1);
+                }
+        }
+}
+
+if (nCount > 0 && psOptions->nBandCount == 0) {
+        fprintf( stderr, "Could not find GRIB element and short name specified.\n" );
+	GDALTranslateOptionsFree(psOptions);
+	return NULL;
+}
 
 /* -------------------------------------------------------------------- */
 /*      Build band list to translate                                    */
@@ -1920,6 +1953,16 @@ GDALTranslateOptions *GDALTranslateOptionsNew(char** papszArgv, GDALTranslateOpt
             psOptions->papszCreateOptions = CSLAddString( psOptions->papszCreateOptions, papszArgv[++i] );
         }
 
+	else if( EQUAL(papszArgv[i],"-gribelement") && papszArgv[i+1] )
+        {
+            psOptions->papszGribElement = CSLAddString( psOptions->papszGribElement, papszArgv[++i] );
+        }
+
+	else if( EQUAL(papszArgv[i],"-gribshortname") && papszArgv[i+1] )
+        {
+            psOptions->papszGribShortName = CSLAddString( psOptions->papszGribShortName, papszArgv[++i] );
+        }
+
         else if( EQUAL(papszArgv[i],"-scale") || STARTS_WITH_CI(papszArgv[i], "-scale_") )
         {
             int nIndex = 0;
@@ -2217,6 +2260,8 @@ void GDALTranslateOptionsFree(GDALTranslateOptions *psOptions)
         CPLFree(psOptions->pszFormat);
         CPLFree(psOptions->panBandList);
         CSLDestroy(psOptions->papszCreateOptions);
+        CSLDestroy(psOptions->papszGribElement);
+        CSLDestroy(psOptions->papszGribShortName);
         CPLFree(psOptions->pasScaleParams);
         CPLFree(psOptions->padfExponent);
         CSLDestroy(psOptions->papszMetadataOptions);
