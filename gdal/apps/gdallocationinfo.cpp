@@ -222,6 +222,9 @@ int main( int argc, char ** argv )
     bool               bQuiet = false, bValOnly = false;
     int                nOverview = -1;
     char             **papszOpenOptions = NULL;
+    /*! grib identifies to search for */
+    char **papszGribElement;
+    char **papszGribShortName;
 
     GDALAllRegister();
     argc = GDALGeneralCmdLineProcessor( argc, &argv, 0 );
@@ -278,6 +281,15 @@ int main( int argc, char ** argv )
             bValOnly = true;
             bQuiet = true;
         }
+	else if( EQUAL(argv[i],"-gribelement") && i < argc-1 )
+        {
+            papszGribElement = CSLAddString( papszGribElement, argv[++i] );
+        }
+
+        else if( EQUAL(argv[i],"-gribshortname") && i < argc-1 )
+        {
+            papszGribShortName = CSLAddString( papszGribShortName, argv[++i] );
+        }
         else if( EQUAL(argv[i], "-oo") && i < argc-1 )
         {
             papszOpenOptions = CSLAddString( papszOpenOptions,
@@ -326,6 +338,30 @@ int main( int argc, char ** argv )
         if( hCT == NULL )
             exit( 1 );
     }
+
+int nCount = CSLCount(papszGribElement);
+
+for( int i = 0; i < nCount; i++ ) {
+        for( int iBand = 0; iBand < GDALGetRasterCount( hSrcDS ); iBand++ ) {
+
+                GDALRasterBandH hBand = GDALGetRasterBand( hSrcDS, iBand+1 );
+
+                const char *pszElement = GDALGetMetadataItem( hBand, "GRIB_ELEMENT", "" );
+                const char *pszShortName = GDALGetMetadataItem( hBand, "GRIB_SHORT_NAME", "" );
+
+                //fprintf( stdout, "Searching %i \"%s\" for \"%s\"\n", iBand+1, pszComment, papszGribComment[i]);
+
+                if( pszElement != NULL && pszShortName != NULL && EQUAL(pszElement, papszGribElement[i]) && EQUAL(pszShortName, papszGribShortName[i])) {
+			anBandList.push_back(iBand+1);
+                }
+        }
+}
+
+if (nCount > 0 && anBandList.size() == 0) {
+        fprintf( stderr, "Could not find GRIB element and short name specified.\n" );
+        exit(1);
+}
+
 
 /* -------------------------------------------------------------------- */
 /*      If no bands were requested, we will query them all.             */
