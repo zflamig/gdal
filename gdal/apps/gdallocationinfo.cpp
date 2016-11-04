@@ -223,8 +223,8 @@ int main( int argc, char ** argv )
     int                nOverview = -1;
     char             **papszOpenOptions = NULL;
     /*! grib identifies to search for */
-    char **papszGribElement;
-    char **papszGribShortName;
+    char **papszGribElement = NULL;
+    char **papszGribShortName = NULL;
 
     GDALAllRegister();
     argc = GDALGeneralCmdLineProcessor( argc, &argv, 0 );
