@@ -617,6 +617,8 @@ GDALDatasetH GDALTranslate( const char *pszDest, GDALDatasetH hSrcDataset,
 int nCount = CSLCount(psOptions->papszGribElement);
 
 for( int i = 0; i < nCount; i++ ) {
+	bool foundBand = false;
+
         for( int iBand = 0; iBand < GDALGetRasterCount( hSrcDataset ); iBand++ ) {
 
                 GDALRasterBandH hBand = GDALGetRasterBand( hSrcDataset, iBand+1 );
@@ -630,8 +632,14 @@ for( int i = 0; i < nCount; i++ ) {
                         psOptions->nBandCount++;
                         psOptions->panBandList = (int *)CPLRealloc(psOptions->panBandList, sizeof(int) * psOptions->nBandCount);
                         psOptions->panBandList[psOptions->nBandCount-1] = (iBand+1);
+			foundBand = true;
+			break;
                 }
         }
+
+	if (!foundBand) {
+		fprintf( stdout, "Failed to find a band for grib element \"%s\" short name \"%s\"\n", psOptions->papszGribElement[i], psOptions->papszGribShortName[i]);
+	}
 }
 
 if (nCount > 0 && psOptions->nBandCount == 0) {
