@@ -1433,6 +1433,13 @@ if (nCount > 0 && psOptions->nBandCount == 0) {
 
             poSource->SetColorTableComponent(nComponent);
 
+            int bSuccess;
+            double dfNoData = poSrcBand->GetNoDataValue( &bSuccess );
+            if ( bSuccess )
+            {
+              poSource->SetNoDataValue(dfNoData);
+            }
+
             poSimpleSource = poSource;
         }
         else
