@@ -3232,9 +3232,9 @@ void netCDFDataset::SetProjectionFromVar( int nVarId, bool bReadSRSOnly )
 
 		double dummyAdd, dummyScale;
 		if ( !nc_get_att_double(cdfid, nVarDimXID,
-                                       "add_offset", &dummyAdd) &&
+                                       CF_ADD_OFFSET, &dummyAdd) &&
 		     !nc_get_att_double(cdfid, nVarDimXID,
-                                       "scale_factor", &dummyScale) )
+                                       CF_SCALE_FACTOR, &dummyScale) )
                 {
                    xMinMax[0] = dummyAdd + xMinMax[0] * dummyScale;
                    xMinMax[1] = dummyAdd + xMinMax[1] * dummyScale;
@@ -3242,9 +3242,9 @@ void netCDFDataset::SetProjectionFromVar( int nVarId, bool bReadSRSOnly )
                 }
 
 		if ( !nc_get_att_double(cdfid, nVarDimYID,
-                                       "add_offset", &dummyAdd) &&
+                                       CF_ADD_OFFSET, &dummyAdd) &&
                      !nc_get_att_double(cdfid, nVarDimYID,
-                                       "scale_factor", &dummyScale) )
+                                       CF_SCALE_FACTOR, &dummyScale) )
                 {
                    yMinMax[0] = dummyAdd + yMinMax[0] * dummyScale;
                    yMinMax[1] = dummyAdd + yMinMax[1] * dummyScale;
