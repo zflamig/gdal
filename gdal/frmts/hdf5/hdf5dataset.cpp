@@ -290,38 +290,10 @@ GDALDataset *HDF5Dataset::Open( GDALOpenInfo * poOpenInfo )
 /* -------------------------------------------------------------------- */
 /*      Create datasource.                                              */
 /* -------------------------------------------------------------------- */
-    HDF5Dataset * const poDS = new HDF5Dataset();
-
-    poDS->SetDescription( poOpenInfo->pszFilename );
-
-/* -------------------------------------------------------------------- */
-/*      Try opening the dataset.                                        */
-/* -------------------------------------------------------------------- */
-    poDS->hHDF5 = H5Fopen( poOpenInfo->pszFilename,
-                           H5F_ACC_RDONLY,
-                           H5P_DEFAULT );
-    if( poDS->hHDF5 < 0 )  {
-        delete poDS;
+    HDF5Dataset * const poDS = OpenHDF5( poOpenInfo->pszFilename );
+    if ( !poDS ) {
         return NULL;
     }
-
-    poDS->hGroupID = H5Gopen( poDS->hHDF5, "/" );
-    if( poDS->hGroupID < 0 ) {
-        poDS->bIsHDFEOS=false;
-        delete poDS;
-        return NULL;
-    }
-
-    poDS->bIsHDFEOS=true;
-    poDS->ReadGlobalAttributes( true );
-
-    poDS->SetMetadata( poDS->papszMetadata  );
-
-    if ( CSLCount( poDS->papszSubDatasets ) / 2 >= 1 )
-        poDS->SetMetadata( poDS->papszSubDatasets, "SUBDATASETS" );
-
-    // Make sure we don't try to do any pam stuff with this dataset.
-    poDS->nPamFlags |= GPF_NOSAVE;
 
 /* -------------------------------------------------------------------- */
 /*      If we have single subdataset only, open it immediately          */
@@ -349,6 +321,48 @@ GDALDataset *HDF5Dataset::Open( GDALOpenInfo * poOpenInfo )
         }
     }
     return( poDS );
+}
+
+HDF5Dataset *HDF5Dataset::OpenHDF5( const char * pszFilename )
+{
+
+/* -------------------------------------------------------------------- */
+/*      Create datasource.                                              */
+/* -------------------------------------------------------------------- */
+    HDF5Dataset * const poDS = new HDF5Dataset();
+
+    poDS->SetDescription( pszFilename );
+
+/* -------------------------------------------------------------------- */
+/*      Try opening the dataset.                                        */
+/* -------------------------------------------------------------------- */
+    poDS->hHDF5 = H5Fopen( pszFilename,
+                           H5F_ACC_RDONLY,
+                           H5P_DEFAULT );
+    if( poDS->hHDF5 < 0 )  {
+        delete poDS;
+        return NULL;
+    }
+
+    poDS->hGroupID = H5Gopen( poDS->hHDF5, "/" );
+    if( poDS->hGroupID < 0 ) {
+        poDS->bIsHDFEOS=false;
+        delete poDS;
+        return NULL;
+    }
+
+    poDS->bIsHDFEOS=true;
+    poDS->ReadGlobalAttributes( true );
+
+    poDS->SetMetadata( poDS->papszMetadata  );
+
+    if ( CSLCount( poDS->papszSubDatasets ) / 2 >= 1 )
+        poDS->SetMetadata( poDS->papszSubDatasets, "SUBDATASETS" );
+
+    // Make sure we don't try to do any pam stuff with this dataset.
+         poDS->nPamFlags |= GPF_NOSAVE;
+	
+    return poDS;
 }
 
 /************************************************************************/
