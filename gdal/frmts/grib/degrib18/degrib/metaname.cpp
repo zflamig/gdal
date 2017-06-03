@@ -1704,6 +1704,7 @@ static const GRIB2LocalTable NCEP_LclTable[] = {
             {0, 7, 196, "UVI", "Ultra Violet Index", "W/(m^2)", UC_UVIndex},
             {0, 7, 197, "UPHL", "Updraft Helicity", "m^2/s^2", UC_NONE},
             {0, 7, 198, "LAI", "Leaf area index", "-", UC_NONE},
+	    {0, 7, 199, "MXUPHL", "Maximum of Updraft Helicity", "(m^2)/(s^2)", UC_NONE},
 
             {0, 13, 192, "PMTC", "Particulate matter (coarse)", "µg/m^3", UC_NONE},
             {0, 13, 193, "PMTF", "Particulate matter (fine)", "µg/m^3", UC_NONE},
@@ -3360,7 +3361,7 @@ static const GRIB2SurfTable Surface[] = {
    /* 7 */ {"TRO", "Tropopause", "-"},
    /* 8 */ {"NTAT", "Nominal top of atmosphere", "-"},
    /* 9 */ {"SEAB", "Sea bottom", "-"},
-   /* 10: 10-19 */ {"RESERVED", "Reserved", "-"},
+   /* 10: 10-19 */ {"EATM", "Entire atmosphere (considered as a single layer)", "-"},
    /* 11: 20 */ {"TMPL", "Isothermal level", "K"},
    /* 12: 21-99 */ {"RESERVED", "Reserved", "-"},
    /* 13: 100 */ {"ISBL", "Isobaric surface", "Pa"},
@@ -3510,8 +3511,10 @@ GRIB2SurfTable Table45Index (int i,
       *f_reserved = 0;
       return Surface[11];
    }
-   if (i > 9)
+   if (i > 9) {
+      *f_reserved = 0;
       return Surface[10];
+   }
    if (i > 0) {
       *f_reserved = 0;
       return Surface[i];

@@ -111,6 +111,10 @@ public:
   HDF5Dataset();
   ~HDF5Dataset();
 
+  static HDF5Dataset *OpenHDF5( const char * pszFilename );
+  hid_t GetHDF5Handle() { return hHDF5; }
+  HDF5GroupObjects * GetRootGroup() { return poH5RootGroup; } 
+
   static GDALDataset *Open(GDALOpenInfo *);
   static int Identify(GDALOpenInfo *);
 };

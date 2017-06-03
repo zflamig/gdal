@@ -77,6 +77,7 @@ class HDF5ImageDataset : public HDF5Dataset
         PROD_CSK_L1D
     } HDF5CSKProductEnum;
 
+    friend class HDF5Dataset;
     friend class HDF5ImageRasterBand;
 
     char        *pszProjection;
@@ -766,10 +767,22 @@ CPLErr HDF5ImageDataset::CreateProjections()
     if( nDeltaLat == 0 || nDeltaLon == 0 )
         return CE_None;
 
+    hid_t hHDF5Geo = hHDF5;
+    HDF5GroupObjects *poH5RootGroupGeo = poH5RootGroup;
+    HDF5Dataset *poGeoDS = NULL;
+    const char * const pszGeoRef = GetMetadataItem("N_GEO_Ref");
+    if (pszGeoRef != NULL) {
+      poGeoDS = OpenHDF5( pszGeoRef );
+      if ( poGeoDS ) {
+           hHDF5Geo = poGeoDS->GetHDF5Handle();
+           poH5RootGroupGeo = poGeoDS->GetRootGroup();
+      }
+    }
+
     /* -------------------------------------------------------------------- */
     /*      Create HDF5 Data Hierarchy in a link list                       */
     /* -------------------------------------------------------------------- */
-    poH5Objects=HDF5FindDatasetObjects( poH5RootGroup,  "Latitude" );
+    poH5Objects=HDF5FindDatasetObjects( poH5RootGroupGeo,  "Latitude" );
     if( !poH5Objects ) {
         if( GetMetadataItem("where_projdef") != NULL )
             return CreateODIMH5Projection();
@@ -786,11 +799,11 @@ CPLErr HDF5ImageDataset::CreateProjections()
     /* -------------------------------------------------------------------- */
     /*      Retrieve HDF5 data information                                  */
     /* -------------------------------------------------------------------- */
-    const hid_t LatitudeDatasetID   = H5Dopen( hHDF5,poH5Objects->pszPath );
+    const hid_t LatitudeDatasetID   = H5Dopen( hHDF5Geo,poH5Objects->pszPath );
     // LatitudeDataspaceID = H5Dget_space( dataset_id );
 
-    poH5Objects=HDF5FindDatasetObjects( poH5RootGroup, "Longitude" );
-    const hid_t LongitudeDatasetID   = H5Dopen( hHDF5,poH5Objects->pszPath );
+    poH5Objects=HDF5FindDatasetObjects( poH5RootGroupGeo, "Longitude" );
+    const hid_t LongitudeDatasetID   = H5Dopen( hHDF5Geo,poH5Objects->pszPath );
     // LongitudeDataspaceID = H5Dget_space( dataset_id );
 
     if( ( LatitudeDatasetID > 0 ) && ( LongitudeDatasetID > 0) ) {
@@ -884,6 +897,9 @@ CPLErr HDF5ImageDataset::CreateProjections()
         H5Dclose(LatitudeDatasetID);
     if( LongitudeDatasetID > 0 )
         H5Dclose(LongitudeDatasetID);
+    if ( poGeoDS )
+        delete poGeoDS;
+
 
     break;
   }
