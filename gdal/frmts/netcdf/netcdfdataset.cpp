@@ -1347,14 +1347,26 @@ void netCDFRasterBand::CheckData( void * pImage, void * pImageNC,
                     continue;
                 }
                 // Check for valid_range.
-                if( ( ( adfValidRange[0] != dfNoDataValue ) &&
-                      ( ((T *)pImage)[k] < (T)adfValidRange[0] ) )
-                    ||
-                    ( ( adfValidRange[1] != dfNoDataValue ) &&
-                      ( ((T *)pImage)[k] > (T)adfValidRange[1] ) ) )
-                {
-                  ( (T *)pImage )[k] = (T)dfNoDataValue;
-                }
+                if( adfValidRange[0] < adfValidRange[1] )
+		{
+                	if( ( ( adfValidRange[0] != dfNoDataValue ) &&
+                      	( ((T *)pImage)[k] < (T)adfValidRange[0] ) )
+                    	||
+                    	( ( adfValidRange[1] != dfNoDataValue ) &&
+                      	( ((T *)pImage)[k] > (T)adfValidRange[1] ) ) )
+                	{
+                  		( (T *)pImage )[k] = (T)dfNoDataValue;
+                	}
+		}
+		else
+		{
+			if( ( ( adfValidRange[0] != dfNoDataValue ) &&
+                        ( ((T *)pImage)[k] < (T)adfValidRange[0] ) ) )
+                        {
+                                ( (T *)pImage )[k] = (T)dfNoDataValue;
+                        }
+
+		}
             }
         }
     }
@@ -3250,6 +3262,54 @@ void netCDFDataset::SetProjectionFromVar( int nVarId, bool bReadSRSOnly )
                    yMinMax[1] = dummyAdd + yMinMax[1] * dummyScale;
 
                 }
+
+		const char *pszProjName = oSRS.GetAttrValue( "PROJECTION" );
+		if( pszProjName != NULL )
+		{
+			if( EQUAL( pszProjName, SRS_PT_GEOSTATIONARY_SATELLITE ) )
+			{
+				double satelliteHeight = oSRS.GetProjParm(SRS_PP_SATELLITE_HEIGHT, 1.0);
+				size_t nAttlen = 0;
+				char szUnits[NC_MAX_NAME+1];
+				szUnits[0] = '\0';
+				nc_type nAttype=NC_NAT;
+				nc_inq_att(cdfid, nVarDimXID, "units", &nAttype, &nAttlen);
+				if( nAttlen < sizeof(szUnits) &&
+					(status = nc_get_att_text( cdfid, nVarDimXID, "units",
+                                   szUnits )) == NC_NOERR )
+				{
+					szUnits[nAttlen] = '\0';
+					if( EQUAL( szUnits, "microradian" ) )
+					{
+						xMinMax[0] = xMinMax[0] * satelliteHeight * 0.000001;
+						xMinMax[1] = xMinMax[1] * satelliteHeight * 0.000001;
+					}
+					else if( EQUAL( szUnits, "rad" ) )
+					{
+						xMinMax[0] = xMinMax[0] * satelliteHeight;
+						xMinMax[1] = xMinMax[1] * satelliteHeight;
+					}
+				}
+				szUnits[0] = '\0';
+				nc_inq_att(cdfid, nVarDimYID, "units", &nAttype, &nAttlen);
+                                if( nAttlen < sizeof(szUnits) &&
+                                        (status = nc_get_att_text( cdfid, nVarDimYID, "units",
+                                   szUnits )) == NC_NOERR )
+                                {
+                                        szUnits[nAttlen] = '\0';
+                                        if( EQUAL( szUnits, "microradian" ) )
+                                        {
+                                                yMinMax[0] = yMinMax[0] * satelliteHeight * 0.000001;
+                                                yMinMax[1] = yMinMax[1] * satelliteHeight * 0.000001;
+                                        }
+                                        else if( EQUAL( szUnits, "rad" ) )
+                                        {
+                                                yMinMax[0] = yMinMax[0] * satelliteHeight;
+                                                yMinMax[1] = yMinMax[1] * satelliteHeight;
+                                        }
+                                }
+			}
+		}
 
                 adfTempGeoTransform[0] = xMinMax[0];
                 adfTempGeoTransform[2] = 0;
