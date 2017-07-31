@@ -60,7 +60,7 @@ static void Usage(const char* pszErrorMsg, int bShort)
             "       [-mo \"META-TAG=VALUE\"]* [-q] [-sds]\n"
             "       [-co \"NAME=VALUE\"]* [-stats] [-norat]\n"
             "       [-oo NAME=VALUE]*\n"
-            "       [-gribelement \"VALUE\" -gribshortname \"VALUE\"]\n"
+            "       [-gribelement \"VALUE\" -gribshortname \"VALUE\" -gribforecast \"VALUE\"]\n"
             "       src_dataset dst_dataset\n" );
 
     if( !bShort )

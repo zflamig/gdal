@@ -1500,13 +1500,14 @@ static const NDFD_AbrevOverideTable NDFD_Overide[] = {
 static const GRIB2LocalTable NDFD_LclTable[] = {
    /* 0 */ {0, 0, 193, "ApparentT", "Apparent Temperature", "K", UC_K2F},
    /* 1 */ {0, 1, 192, "Wx", "Weather string", "-", UC_NONE},
-           {0, 1, 227, "IceAccum", "Ice Accumulation", "kg/m^2", UC_InchWater}, 
+           {0, 1, 193, "PPI", "Precipitation Potential Index", "%", UC_NONE},
+           {0, 1, 227, "IceAccum", "Ice Accumulation", "kg/m^2", UC_InchWater},
    /* grandfather'ed in a NDFD choice for POP. */
    /* 2 */ {0, 10, 8, "PoP12", "Prob of 0.01 In. of Precip", "%", UC_NONE},
            {0, 13, 194, "smokes", "Surface level smoke from fires",
-            "log10(µg/m^3)", UC_LOG10},
+            "log10(10^-6g/m^3)", UC_LOG10},
            {0, 13, 195, "smokec", "Average vertical column smoke from fires",
-            "log10(µg/m^3)", UC_LOG10},
+            "log10(10^-6g/m^3)", UC_LOG10},
    /* 3 */ {0, 14, 192, "O3MR", "Ozone Mixing Ratio", "kg/kg", UC_NONE},
    /* 4 */ {0, 14, 193, "OZCON", "Ozone Concentration", "PPB", UC_NONE},
    /* Arthur adopted NCEP ozone values from NCEP local table to NDFD local tables. (11/14/2009) */
@@ -1523,6 +1524,10 @@ static const GRIB2LocalTable NDFD_LclTable[] = {
            {0, 19, 215, "TotalSvrProb", "Total Probability of Severe Thunderstorms", "%", UC_NONE},
            {0, 19, 216, "TotalXtrmProb", "Total Probability of Extreme Severe Thunderstorms", "%", UC_NONE},
            {0, 19, 217, "WWA", "Watch Warning Advisory", "-", UC_NONE},
+           {0, 19, 235, "TCWind", "Tropical Cyclone Wind Threat", "0=none; 4=low; 6=moderate; 8=high; 10=extreme", UC_NONE},
+           {0, 19, 236, "TCSurge", "Tropical Cyclone Storm Surge Threat", "0=none; 4=low; 6=moderate; 8=high; 10=extreme", UC_NONE},          
+           {0, 19, 238, "TCRain", "Tropical Cyclone Flooding Rain Threat", "0=none; 4=low; 6=moderate; 8=high; 10=extreme", UC_NONE},
+           {0, 19, 239, "TCTornado", "Tropical Cyclone Tornado Threat", "0=none; 4=low; 6=moderate; 8=high; 10=extreme", UC_NONE},
 /* Leaving next two lines in for grandfathering sake. 9/19/2007... Probably can remove in future. */
            {0, 19, 203, "TotalSvrProb", "Total Probability of Severe Thunderstorms", "%", UC_NONE},
            {0, 19, 204, "TotalXtrmProb", "Total Probability of Extreme Severe Thunderstorms", "%", UC_NONE},
@@ -1533,6 +1538,8 @@ static const GRIB2LocalTable NDFD_LclTable[] = {
    /* Arthur Added this to both NDFD and NCEP local tables. (5/1/2006) */
            {10, 3, 192, "Surge", "Hurricane Storm Surge", "m", UC_M2Feet},
            {10, 3, 193, "ETSurge", "Extra Tropical Storm Surge", "m", UC_M2Feet},
+           {10, 3, 250, "StormTide", "Storm Surge and Tide", "m", UC_M2Feet},
+           {10, 3, 251, "Tide", "Tide", "m", UC_M2Feet},
    /* Mike added 2/2012 */
            {0, 1, 198, "MinRH", "Minimum Relative Humidity", "%", UC_NONE}
 }; 
@@ -2056,6 +2063,27 @@ GRIB2LocalTable MRMS_LclTable[] = {
    /* 107 */ {209, 11, 0, "MergedBaseReflectivityQC", "Mosaic Base Reflectivity (optimal method)", "dBZ", UC_NONE},
    /* 108 */ {209, 11, 1, "MergedReflectivityComposite", "UnQC'd Composite Reflectivity Mosaic (max ref)", "dBZ", UC_NONE},
    /* 109 */ {209, 11, 2, "MergedReflectivityQComposite", "Composite Reflectivity Mosaic (max ref)", "dBZ", UC_NONE},
+	     {209, 11, 3, "MergedBaseReflectivity", "Raw Base Reflectivity Mosaic (optimal method)", "dBZ", UC_NONE},
+	     {209, 11, 4, "Merged_LVL3_BaseHCA", "Level III Base HCA Mosaic (nearest neighbor)", "flag", UC_NONE},
+             {209, 12, 0, "FLASH_CREST_MAXUNITSTREAMFLOW", "FLASH QPE-CREST Unit Streamflow", "m^3/s/km^2", UC_NONE},
+             {209, 12, 1, "FLASH_CREST_MAXSTREAMFLOW", "FLASH QPE-CREST Streamflow", "m^3/s", UC_NONE},
+             {209, 12, 2, "FLASH_CREST_MAXSOILSAT", "FLASH QPE-CREST Soil Saturation", "%", UC_NONE},
+             {209, 12, 4, "FLASH_SAC_MAXUNITSTREAMFLOW", "FLASH QPE-SAC-SMA Unit Streamflow", "m^3/s/km^2", UC_NONE},
+             {209, 12, 5, "FLASH_SAC_MAXSTREAMFLOW", "FLASH QPE-SAC-SMA Streamflow", "m^3/s", UC_NONE},
+             {209, 12, 6, "FLASH_SAC_MAXSOILSAT", "FLASH QPE-SAC-SMA Soil Saturation", "%", UC_NONE},		
+             {209, 12, 14, "FLASH_QPE_ARI30M", "FLASH QPE Average Recurrence Interval 30-min", "years", UC_NONE},
+             {209, 12, 15, "FLASH_QPE_ARI01H", "FLASH QPE Average Recurrence Interval 1-hour", "years", UC_NONE},
+             {209, 12, 16, "FLASH_QPE_ARI03H", "FLASH QPE Average Recurrence Interval 3-hour", "years", UC_NONE},
+             {209, 12, 17, "FLASH_QPE_ARI06H", "FLASH QPE Average Recurrence Interval 6-hour", "years", UC_NONE},
+             {209, 12, 18, "FLASH_QPE_ARI12H", "FLASH QPE Average Recurrence Interval 12-hour", "years", UC_NONE},
+             {209, 12, 19, "FLASH_QPE_ARI24H", "FLASH QPE Average Recurrence Interval 24-hour", "years", UC_NONE},
+             {209, 12, 20, "FLASH_QPE_ARIMAX", "FLASH QPE Average Recurrence Interval Max", "years", UC_NONE},
+             {209, 12, 26, "FLASH_QPE_FFG01H", "FLASH QPE-to-FFG Ratio 01H", "non-dim", UC_NONE},
+             {209, 12, 27, "FLASH_QPE_FFG03H", "FLASH QPE-to-FFG Ratio 03H", "non-dim", UC_NONE},
+             {209, 12, 28, "FLASH_QPE_FFG06H", "FLASH QPE-to-FFG Ratio 06H", "non-dim", UC_NONE},
+             {209, 12, 29, "FLASH_QPE_FFGMAX", "FLASH QPE-to-FFG Ratio Max", "non-dim", UC_NONE},
+             {209, 12, 39, "FLASH_HP_MAXUNITSTREAMFLOW", "FLASH QPE-HP Unit Streamflow", "m^3/s/km^2", UC_NONE},
+             {209, 12, 40, "FLASH_HP_MAXSTREAMFLOW", "FLASH QPE-HP Streamflow", "m^3/s", UC_NONE},
 };
 
 
@@ -2541,39 +2569,6 @@ static void ElemNamePerc (uShort2 center, uShort2 subcenter, int prodType,
    table = Choose_GRIB2ParmTable (prodType, cat, &tableLen);
    if (table != NULL) {
       if (subcat < tableLen) {
-         /* Check for NDFD over-rides. */
-         if (IsData_NDFD (center, subcenter) ||
-             IsData_MOS (center, subcenter)) {
-            for (i = 0; i < (sizeof (NDFD_Overide) /
-                             sizeof (NDFD_AbrevOverideTable)); i++) {
-               if (strcmp (NDFD_Overide[i].GRIB2name, table[subcat].name) ==
-                   0) {
-                  mallocSprintf (name, "%s%02d", NDFD_Overide[i].NDFDname,
-                                 percentile);
-                  if (lenTime > 0) {
-                     if (timeRangeUnit == 3) {
-                        mallocSprintf (comment, "%02d mon %s Percentile(%d)",
-                                       lenTime, table[subcat].comment,
-                                       percentile);
-                     } else if (timeRangeUnit == 4) {
-                        mallocSprintf (comment, "%02d yr %s Percentile(%d)",
-                                       lenTime, table[subcat].comment,
-                                       percentile);
-                     } else {
-                        mallocSprintf (comment, "%02d hr %s Percentile(%d)",
-                                       lenTime, table[subcat].comment,
-                                       percentile);
-                     }
-                  } else {
-                     mallocSprintf (comment, "%s Percentile(%d)",
-                                    table[subcat].comment, percentile);
-                  }
-                  mallocSprintf (unit, "[%s]", table[subcat].unit);
-                  *convert = table[subcat].convert;
-                  return;
-               }
-            }
-         }
          mallocSprintf (name, "%s%02d", table[subcat].name, percentile);
          if (lenTime > 0) {
             if (timeRangeUnit == 3) {
@@ -2791,21 +2786,6 @@ static void ElemNameNorm (uShort2 center, uShort2 subcenter, int prodType,
                mallocSprintf (unit, "[%s]", table[subcat].unit);
                *convert = table[subcat].convert;
                return;
-            }
-         }
-         if (IsData_NDFD (center, subcenter) || IsData_MOS (center, subcenter)) {
-            for (i = 0; i < (sizeof (NDFD_Overide) /
-                             sizeof (NDFD_AbrevOverideTable)); i++) {
-               if (strcmp (NDFD_Overide[i].GRIB2name, table[subcat].name) ==
-                   0) {
-                  *name = (char *) malloc (strlen (NDFD_Overide[i].NDFDname) + 1);
-                  strcpy (*name, NDFD_Overide[i].NDFDname);
-                  *comment = (char *) malloc (strlen (table[subcat].comment) + 1);
-                  strcpy (*comment, table[subcat].comment);
-                  mallocSprintf (unit, "[%s]", table[subcat].unit);
-                  *convert = table[subcat].convert;
-                  return;
-               }
             }
          }
          /* Allow hydrologic PoP, thunderstorm probability (TSTM), or APCP to 

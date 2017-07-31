@@ -130,6 +130,7 @@ struct GDALTranslateOptions
     /*! grib identifies to search for */
     char **papszGribElement;
     char **papszGribShortName;
+    char **papszGribForecast;
 
     /*! subwindow from the source image for copying based on pixel/line location */
     double adfSrcWin[4];
@@ -422,6 +423,7 @@ GDALTranslateOptions* GDALTranslateOptionsClone(const GDALTranslateOptions *psOp
     psOptions->papszCreateOptions = CSLDuplicate(psOptionsIn->papszCreateOptions);
     psOptions->papszGribElement = CSLDuplicate(psOptionsIn->papszGribElement);
     psOptions->papszGribShortName = CSLDuplicate(psOptionsIn->papszGribShortName);
+    psOptions->papszGribForecast = CSLDuplicate(psOptionsIn->papszGribForecast);
     if( psOptionsIn->pasScaleParams )
     {
         psOptions->pasScaleParams = (GDALTranslateScaleParams*)CPLMalloc(sizeof(GDALTranslateScaleParams) * psOptions->nScaleRepeat);
@@ -615,6 +617,7 @@ GDALDatasetH GDALTranslate( const char *pszDest, GDALDatasetH hSrcDataset,
 
 
 int nCount = CSLCount(psOptions->papszGribElement);
+bool haveForecasts = CSLCount(psOptions->papszGribForecast) == nCount;
 
 for( int i = 0; i < nCount; i++ ) {
 	bool foundBand = false;
@@ -625,10 +628,19 @@ for( int i = 0; i < nCount; i++ ) {
 
                 const char *pszElement = GDALGetMetadataItem( hBand, "GRIB_ELEMENT", "" );
                 const char *pszShortName = GDALGetMetadataItem( hBand, "GRIB_SHORT_NAME", "" );
+		const char *pszForecast = NULL;
+		if (haveForecasts) {
+			pszForecast = GDALGetMetadataItem( hBand, "GRIB_FORECAST_SECONDS", "" );
+		}
 
                 //fprintf( stdout, "Searching %i \"%s\" for \"%s\"\n", iBand+1, pszComment, papszGribComment[i]);
 
                 if( pszElement != NULL && pszShortName != NULL && EQUAL(pszElement, psOptions->papszGribElement[i]) && EQUAL(pszShortName, psOptions->papszGribShortName[i])) {
+			if (haveForecasts) {
+				if (pszForecast != NULL && !EQUAL(pszForecast, psOptions->papszGribForecast[i])) {
+					continue;
+				}
+			}
                         psOptions->nBandCount++;
                         psOptions->panBandList = (int *)CPLRealloc(psOptions->panBandList, sizeof(int) * psOptions->nBandCount);
                         psOptions->panBandList[psOptions->nBandCount-1] = (iBand+1);
@@ -638,7 +650,12 @@ for( int i = 0; i < nCount; i++ ) {
         }
 
 	if (!foundBand) {
-		fprintf( stdout, "Failed to find a band for grib element \"%s\" short name \"%s\"\n", psOptions->papszGribElement[i], psOptions->papszGribShortName[i]);
+		fprintf( stdout, "Failed to find a band for grib element \"%s\" short name \"%s\"", psOptions->papszGribElement[i], psOptions->papszGribShortName[i]);
+		if (haveForecasts) {
+			fprintf( stdout, " forecast \"%s\"\n", psOptions->papszGribForecast[i]);
+		} else {
+			fprintf(stdout, "%s", "\n");
+		}
 	}
 }
 
@@ -1976,6 +1993,11 @@ GDALTranslateOptions *GDALTranslateOptionsNew(char** papszArgv, GDALTranslateOpt
 	else if( EQUAL(papszArgv[i],"-gribshortname") && papszArgv[i+1] )
         {
             psOptions->papszGribShortName = CSLAddString( psOptions->papszGribShortName, papszArgv[++i] );
+        }
+
+	else if( EQUAL(papszArgv[i],"-gribforecast") && papszArgv[i+1] )
+        {
+            psOptions->papszGribForecast = CSLAddString( psOptions->papszGribForecast, papszArgv[++i] );
         }
 
         else if( EQUAL(papszArgv[i],"-scale") || STARTS_WITH_CI(papszArgv[i], "-scale_") )
