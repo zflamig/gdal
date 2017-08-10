@@ -704,7 +704,7 @@ static const GRIB2ParmTable MeteoMoment[] = {
 /* GRIB2 Code table 4.2 : 0.3 */
 static const GRIB2ParmTable MeteoMass[] = {
    /* 0 */ {"PRES", "Pressure", "Pa", UC_NONE},
-   /* 1 */ {"PRMSL", "Pressure reduced to MSL", "Pa", UC_NONE},
+   /* 1 */ {"PRES", "Pressure reduced to MSL", "Pa", UC_NONE},
    /* 2 */ {"PTEND", "Pressure tendency", "Pa/s", UC_NONE},
    /* 3 */ {"ICAHT", "ICAO Standard Atmosphere Reference Height", "m", UC_NONE},
    /* 4 */ {"GP", "Geopotential", "(m^2)/(s^2)", UC_NONE},
