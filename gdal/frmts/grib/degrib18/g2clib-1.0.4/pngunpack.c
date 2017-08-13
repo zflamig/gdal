@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include "grib2.h"
 
-int dec_png(unsigned char *,g2int *,g2int *,char *);
-
 g2int pngunpack(unsigned char *cpack,g2int len,g2int *idrstmpl,g2int ndpts,
                 g2float *fld)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
@@ -57,19 +55,18 @@ g2int pngunpack(unsigned char *cpack,g2int len,g2int *idrstmpl,g2int ndpts,
 //  is the data value at each gridpoint
 //
       if (nbits != 0) {
-
+         int nbytes = nbits/8;
          ifld=(g2int *)calloc(ndpts,sizeof(g2int));
-	 int nbytes = nbits/8;
          ctemp=(unsigned char *)calloc(ndpts*nbytes,1);
-         if ( ifld == 0 || ctemp == 0) {
+         if ( ifld == NULL || ctemp == NULL) {
             fprintf(stderr, "Could not allocate space in jpcunpack.\n"
                     "Data field NOT unpacked.\n");
             return(1);
          }
-         iret=(g2int)dec_png(cpack,&width,&height,ctemp);
+         iret=(g2int)dec_png(cpack,len,&width,&height,ctemp, ndpts, nbits);
          gbits(ctemp,ifld,0,nbits,0,ndpts);
          for (j=0;j<ndpts;j++) {
-	   fld[j] = refD + bscale*(g2float)(ifld[j]);
+            fld[j] = refD + bscale*(g2float)(ifld[j]);
          }
          free(ctemp);
          free(ifld);
