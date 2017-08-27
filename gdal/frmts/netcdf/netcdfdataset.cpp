@@ -493,7 +493,8 @@ netCDFRasterBand::netCDFRasterBand( netCDFDataset *poNCDFDS,
 /* -------------------------------------------------------------------- */
     if( poNCDFDS->bBottomUp && nBlockYSize != 1 )
     {
-        nBlockXSize = nRasterXSize;
+	//printf("eww\n");
+        //nBlockXSize = nRasterXSize;
         nBlockYSize = 1;
     }
 }
@@ -1403,7 +1404,6 @@ CPLErr netCDFRasterBand::IReadBlock( int nBlockXOff, int nBlockYOff,
 
 {
     CPLMutexHolderD(&hNCMutex);
-
     int nd = 0;
     nc_inq_varndims( cdfid, nZId, &nd );
 
@@ -1526,6 +1526,7 @@ CPLErr netCDFRasterBand::IReadBlock( int nBlockXOff, int nBlockYOff,
             + ( (nBlockXSize * nBlockYSize - edge[nBandXPos] * edge[nBandYPos])
                 * (GDALGetDataTypeSize(eDataType) / 8) );
     }
+
 
     /* read data according to type */
     int status;
