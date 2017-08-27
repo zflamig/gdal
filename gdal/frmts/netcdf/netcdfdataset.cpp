@@ -3264,6 +3264,13 @@ void netCDFDataset::SetProjectionFromVar( int nVarId, bool bReadSRSOnly )
 
                 }
 
+		if (poDS->bBottomUp) {
+			double temp = yMinMax[0];
+			yMinMax[0] = yMinMax[1];
+			yMinMax[1] = temp;
+			poDS->bBottomUp = false;
+		}
+
 		const char *pszProjName = oSRS.GetAttrValue( "PROJECTION" );
 		if( pszProjName != NULL )
 		{
