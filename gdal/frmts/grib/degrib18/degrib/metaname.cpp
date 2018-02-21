@@ -820,6 +820,8 @@ static const GRIB2ParmTable MeteoMoist[] = {
 /* 223 */    {"-", "Reserved", "-", UC_NONE},
 /* 224 */    {"-", "Reserved", "-", UC_NONE},
 /* 225 */    {"FRZR", "Freezing Rain", "kg/(m^2)", UC_NONE},
+/* 226 */    {"-", "Reserved", "-", UC_NONE},
+/* 227 */    {"FROZR", "Frozen Rain", "kg/(m^2)", UC_NONE},
 };
 
 /* GRIB2 Code table 4.2 : 0.2 */
