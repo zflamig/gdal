@@ -2124,7 +2124,7 @@ void GRIBDataset::SetGribMetaData(grib_MetaData *meta)
         if( (m_poCT != nullptr) &&
             m_poCT->Transform(1, &rMinX, &rMaxY) )
         {
-            if (meta->gds.scan == GRIB2BIT_2)  // Y is minY, GDAL wants maxY.
+            if ((meta->gds.scan & GRIB2BIT_2) == GRIB2BIT_2)  // Y is minY, GDAL wants maxY.
             {
                 // -1 because we GDAL needs the coordinates of the centre of
                 // the pixel.
